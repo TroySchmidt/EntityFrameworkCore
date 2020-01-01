@@ -7403,6 +7403,76 @@ LEFT JOIN [Weapons] AS [w0] ON [w].[SynergyWithId] = [w0].[Id]
 ORDER BY [w0].[IsAutomatic]");
         }
 
+        public override async Task Can_query_on_indexed_properties(bool async)
+        {
+            await base.Can_query_on_indexed_properties(async);
+
+            AssertSql(
+                @"SELECT [c].[Name], [c].[Location], [c].[Nation]
+FROM [Cities] AS [c]
+WHERE [c].[Nation] = N'Tyrus'");
+        }
+
+        public override async Task Can_query_on_indexed_property_when_property_name_from_closure(bool async)
+        {
+            await base.Can_query_on_indexed_property_when_property_name_from_closure(async);
+
+            AssertSql(
+                @"SELECT [c].[Name], [c].[Location], [c].[Nation]
+FROM [Cities] AS [c]
+WHERE [c].[Nation] = N'Tyrus'");
+        }
+
+        public override async Task Can_project_indexed_properties(bool async)
+        {
+            await base.Can_project_indexed_properties(async);
+
+            AssertSql(
+                @"SELECT [c].[Nation]
+FROM [Cities] AS [c]");
+        }
+
+        public override async Task Can_OrderBy_indexed_properties(bool async)
+        {
+            await base.Can_OrderBy_indexed_properties(async);
+
+            AssertSql(
+                @"SELECT [c].[Name], [c].[Location], [c].[Nation]
+FROM [Cities] AS [c]
+WHERE [c].[Nation] IS NOT NULL
+ORDER BY [c].[Nation], [c].[Name]");
+        }
+
+        public override async Task Can_group_by_indexed_property_on_query(bool isAsync)
+        {
+            await base.Can_group_by_indexed_property_on_query(isAsync);
+
+            AssertSql(
+                @"SELECT COUNT(*)
+FROM [Cities] AS [c]
+GROUP BY [c].[Nation]");
+        }
+
+        public override async Task Can_group_by_converted_indexed_property_on_query(bool isAsync)
+        {
+            await base.Can_group_by_converted_indexed_property_on_query(isAsync);
+
+            AssertSql(
+                @"SELECT COUNT(*)
+FROM [Cities] AS [c]
+GROUP BY [c].[Nation]");
+        }
+
+        public override async Task Can_join_on_indexed_property_on_query(bool isAsync)
+        {
+            await base.Can_join_on_indexed_property_on_query(isAsync);
+
+            AssertSql(
+                @"SELECT [c].[Name], [c0].[Location]
+FROM [Cities] AS [c]
+INNER JOIN [Cities] AS [c0] ON [c].[Nation] = [c0].[Nation]");
+        }
+
         private void AssertSql(params string[] expected)
             => Fixture.TestSqlLoggerFactory.AssertBaseline(expected);
     }

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 
@@ -31,5 +33,17 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
                 || methodInfo?.IsGenericMethod == true
                 && methodInfo.Name == nameof(EF.Property)
                 && methodInfo.DeclaringType?.FullName == _efTypeName;
+
+        /// <summary>
+        ///     Returns true if the given method represents a indexer property access.
+        /// </summary>
+        /// <param name="methodInfo"> The method. </param>
+        /// <returns> True if the method is <see cref="EF.Property{TProperty}" />; false otherwise. </returns>
+        public static bool IsIndexerMethod([NotNull] this MethodInfo methodInfo)
+            => !methodInfo.IsStatic
+                && "get_Item".Equals(methodInfo.Name, StringComparison.Ordinal)
+                && typeof(object) == methodInfo.ReturnType
+                && methodInfo.GetParameters()?.Count() == 1
+                && typeof(string) == methodInfo.GetParameters().First().ParameterType;
     }
 }

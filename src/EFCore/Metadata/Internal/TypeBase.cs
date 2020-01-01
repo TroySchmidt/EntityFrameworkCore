@@ -185,7 +185,7 @@ namespace Microsoft.EntityFrameworkCore.Metadata.Internal
 
             if (!_indexerPropertyInitialized)
             {
-                var indexerPropertyInfo = GetRuntimeProperties().Values.FirstOrDefault(pi => pi.IsIndexerProperty());
+                var indexerPropertyInfo = GetRuntimeProperties().Values.FirstOrDefault(PropertyInfoExtensions.IsIndexerProperty);
 
                 Interlocked.CompareExchange(ref _indexerPropertyInfo, indexerPropertyInfo, null);
                 _indexerPropertyInitialized = true;

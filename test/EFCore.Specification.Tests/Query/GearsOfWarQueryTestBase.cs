@@ -7397,7 +7397,7 @@ namespace Microsoft.EntityFrameworkCore.Query
                 ss => ss.Set<Weapon>().Select(w => w.SynergyWith).OrderBy(g => MaybeScalar<bool>(g, () => g.IsAutomatic)),
                 assertOrder: true);
         }
-        
+
         [ConditionalFact]
         public virtual void Byte_array_filter_by_length_parameter_compiled()
         {
@@ -7409,6 +7409,75 @@ namespace Microsoft.EntityFrameworkCore.Query
             var byteQueryParam = new[] { (byte)42, (byte)128 };
 
             Assert.Equal(2, query(context, byteQueryParam));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_query_on_indexed_properties(bool async)
+        {
+            return AssertQuery(
+                async,
+                ss => ss.Set<City>().Where(c => (string)c["Nation"] == "Tyrus"));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_query_on_indexed_property_when_property_name_from_closure(bool async)
+        {
+            var propertyName = "Nation";
+            return AssertQuery(
+                async,
+                ss => ss.Set<City>().Where(c => (string)c[propertyName] == "Tyrus"));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_project_indexed_properties(bool async)
+        {
+            return AssertQuery(
+                async,
+                ss => ss.Set<City>().Select(c => (string)c["Nation"]));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_OrderBy_indexed_properties(bool async)
+        {
+            return AssertQuery(
+                async,
+                ss => ss.Set<City>().Where(c => (string)c["Nation"] != null).OrderBy(c => (string)c["Nation"]).ThenBy(c => c.Name),
+                assertOrder: true);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_group_by_indexed_property_on_query(bool isAsync)
+        {
+            return AssertQueryScalar(
+                isAsync,
+                ss => ss.Set<City>().GroupBy(c => c["Nation"]).Select(g => g.Count()));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_group_by_converted_indexed_property_on_query(bool isAsync)
+        {
+            return AssertQueryScalar(
+                isAsync,
+                ss => ss.Set<City>().GroupBy(c => (string)c["Nation"]).Select(g => g.Count()));
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(IsAsyncData))]
+        public virtual Task Can_join_on_indexed_property_on_query(bool isAsync)
+        {
+            return AssertQuery(
+                isAsync,
+                ss =>
+                    (from c1 in ss.Set<City>()
+                     join c2 in ss.Set<City>()
+                         on c1["Nation"] equals c2["Nation"]
+                     select new { c1.Name, c2.Location }));
         }
 
         protected GearsOfWarContext CreateContext() => Fixture.CreateContext();

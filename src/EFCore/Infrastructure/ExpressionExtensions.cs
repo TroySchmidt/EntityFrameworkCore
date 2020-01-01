@@ -108,6 +108,31 @@ namespace Microsoft.EntityFrameworkCore.Infrastructure
         }
 
         /// <summary>
+        ///     If the given a method-call expression represents a call to indexer on the entity, then this
+        ///     method extracts the entity expression and property name.
+        /// </summary>
+        /// <param name="methodCallExpression"> The method-call expression for indexer. </param>
+        /// <param name="entityExpression"> The extracted entity access expression. </param>
+        /// <param name="propertyName"> The accessed property name. </param>
+        /// <returns> True if the method-call was for indexer; false otherwise. </returns>
+        public static bool TryGetIndexerArguments(
+            [NotNull] this MethodCallExpression methodCallExpression,
+            out Expression entityExpression,
+            out string propertyName)
+        {
+            if (methodCallExpression.Method.IsIndexerMethod()
+                && methodCallExpression.Arguments[0] is ConstantExpression propertyNameExpression)
+            {
+                entityExpression = methodCallExpression.Object;
+                propertyName = (string)propertyNameExpression.Value;
+                return true;
+            }
+
+            (entityExpression, propertyName) = (null, null);
+            return false;
+        }
+
+        /// <summary>
         ///     <para>
         ///         Gets the <see cref="PropertyInfo" /> represented by a simple property-access expression.
         ///     </para>

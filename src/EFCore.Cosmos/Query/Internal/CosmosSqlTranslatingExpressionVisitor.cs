@@ -164,6 +164,12 @@ namespace Microsoft.EntityFrameworkCore.Cosmos.Query.Internal
                     : null;
             }
 
+            // EF Indexer property
+            if (methodCallExpression.TryGetIndexerArguments(out source, out propertyName))
+            {
+                return TryBindMember(source, MemberIdentity.Create(propertyName), out var result) ? result : null;
+            }
+
             if (TranslationFailed(methodCallExpression.Object, Visit(methodCallExpression.Object), out var sqlObject))
             {
                 return null;
